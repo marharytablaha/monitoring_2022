@@ -62,4 +62,35 @@ plotRGB(EN, r=1, g=7, b=13, stretch="Lin")
 
 dev.off()
 
+#----- day 2
+
+# importing all the data together with the lapply function
+rlist <- list.files(pattern="EN")
+rlist
+
+list_rast <- lapply(rlist, raster)
+list_rast
+
+EN_stack <- stack(list_rast)
+EN_stack
+
+cl <- colorRampPalette(c('red','orange','yellow'))(100) # 
+plot(EN_stack, col=cl)
+
+# Exercise plot only the first image of the stack
+plot(EN_stack$EN_0001, col=cl)
+
+# difference
+ENdif <- EN_stack$EN_0001 - EN_stack$EN_0013
+cldif <- colorRampPalette(c('blue','white','red'))(100) # 
+plot(ENdif, col=cldif)
+
+# automated processing source function
+source("name_of_your_file.r")
+
+
+
+# pairs
+pairs(EN)
+
 # direct import
