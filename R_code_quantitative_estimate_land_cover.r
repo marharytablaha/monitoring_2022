@@ -39,8 +39,28 @@ propforest<-1490490/total
 
 # build a dataframe
 cover<-c("Forest", "Agriculture")
-prop1992<-c(0.82805, 0.1692378)
+prop1992<-c(propforest, propagri)
 proportion1992<-data.frame(cover, prop1992)
 
 library(ggplot2)
 ggplot(proportion1992, aes(x=cover, y=prop1992, color=cover)) + geom_bar(stat="identity", fill="white")
+
+# Classification of 2006
+# Unsupervised classification
+l2006c<-unsuperClass(l2006, nClasses=2)
+plot(l2006c$map)
+freq(l2006c$map)
+
+# forests = 3247434 
+# agricultural areas and water = 3952566
+
+total2006<-7200000
+propagri2006<-3952566/total2006
+propforest2006<-3247434/total2006
+prop2006<-c(propforest2006,propagri2006)
+proportion <-data.frame(cover,prop1992,prop2006)
+
+ggplot(proportion, aes(x=cover, y=prop2006, color=cover)) + geom_bar(stat="identity", fill="white")
+p1<-ggplot(proportion1992, aes(x=cover, y=prop1992, color=cover)) + geom_bar(stat="identity", fill="white")+ylim(0,1)
+p2<-ggplot(proportion, aes(x=cover, y=prop2006, color=cover)) + geom_bar(stat="identity", fill="white")+ylim(0,1)
+
