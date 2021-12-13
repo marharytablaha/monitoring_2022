@@ -51,16 +51,46 @@ l2006c<-unsuperClass(l2006, nClasses=2)
 plot(l2006c$map)
 freq(l2006c$map)
 
-# forests = 3247434 
-# agricultural areas and water = 3952566
+# forests = 3952566 
+# agricultural areas and water = 3247434
 
 total2006<-7200000
-propagri2006<-3952566/total2006
-propforest2006<-3247434/total2006
+propagri2006<-3247434/total2006
+propforest2006<-3952566/total2006
 prop2006<-c(propforest2006,propagri2006)
 proportion <-data.frame(cover,prop1992,prop2006)
 
 ggplot(proportion, aes(x=cover, y=prop2006, color=cover)) + geom_bar(stat="identity", fill="white")
 p1<-ggplot(proportion1992, aes(x=cover, y=prop1992, color=cover)) + geom_bar(stat="identity", fill="white")+ylim(0,1)
 p2<-ggplot(proportion, aes(x=cover, y=prop2006, color=cover)) + geom_bar(stat="identity", fill="white")+ylim(0,1)
+
+grid.arrange(p1, p2, nrow=1)
+
+install.packages("patchwork")
+library(patchwork)
+p1+p2
+# If you want to put one graph on top of the other:
+p1/p2
+l1992
+# patchwork is working with raster data, but they should be plotted with ggRGB
+# instead of using plogRGB we are going to use ggRGB
+ggRGB(l1992, r=1, g=2, b=3)
+ggRGB(l1992, r=1, g=2, b=3, stretch="lin")
+ggRGB(l1992, r=1, g=2, b=3, stretch="hist")
+ggRGB(l1992, r=1, g=2, b=3, stretch="sqrt")
+ggRGB(l1992, r=1, g=2, b=3, stretch="log")
+
+# patchwork
+gp1<-ggRGB(l1992, r=1, g=2, b=3, stretch="lin")
+gp2<-ggRGB(l1992, r=1, g=2, b=3, stretch="hist")
+gp3<-ggRGB(l1992, r=1, g=2, b=3, stretch="sqrt")
+gp4<-ggRGB(l1992, r=1, g=2, b=3, stretch="log")
+
+gp1+gp2+gp3+gp4
+
+# multitemporal patchwork
+gp1 <- ggRGB(l1992, r=1, g=2, b=3)
+gp5 <- ggRGB(l2006, r=1, g=2, b=3)
+ 
+gp1 + gp5
 
