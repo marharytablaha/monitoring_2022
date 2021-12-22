@@ -1,0 +1,21 @@
+# R code for measuring community interactions!
+
+# install.package("vegan")
+library(vegan)
+
+# Set the working directory
+setwd("C:/lab/")
+
+# We are going to load the data
+load("biomes_multivar.RData")
+
+# List objects
+ls()
+biomes
+plot(multivar)
+
+# Let's take a look at the grouping of species? Are they in the same biome?
+attach(biomes_types)
+ordiellipse(multivar, type, col=c("black","red","green","blue"), kind="ehull", lwd=3)
+ordispider(multivar, type, col=c("black","red","green","blue"), label=T)
+
