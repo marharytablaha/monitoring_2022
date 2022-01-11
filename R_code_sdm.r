@@ -46,4 +46,14 @@ plot(preds$precipitation, col=cl)
 points(presences, pch=19)
 
 # set the data for the sdm
+# day 2
+# importing the source script
 
+setwd("C:/lab/")
+source("R_code_source_sdm.r")
+# in the theoretical slide of SDMs we should use individuals of species and the predictors
+preds
+# these are the predictors: elevation, precipitation, temperature, vegetation
+# Let's explain to the software what are the training and predictors
+datasdm <- sdmData(train=species, predictors=preds)
+m1 <- sdm(formula=Occurrence~temperature+elevation+precipitation+vegetation, data=datasdm, methods="glm")
