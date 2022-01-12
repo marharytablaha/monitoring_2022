@@ -57,3 +57,17 @@ preds
 # Let's explain to the software what are the training and predictors
 datasdm <- sdmData(train=species, predictors=preds)
 m1 <- sdm(formula=Occurrence~temperature+elevation+precipitation+vegetation, data=datasdm, methods="glm")
+p1 <- predict(m1, newdata=preds)
+
+plot(p1, col=cl)
+points(presences, pch=19)
+
+# make a stack: stack the predictors and the final map of the probability of distribution
+s1 <- stack(preds,p1)
+
+# change the name of the final model
+names(s1) <- c("Elevation", "Precipitation", "Temperature", "Vegetation", "Model")
+plot(p1, col=cl)
+
+
+
