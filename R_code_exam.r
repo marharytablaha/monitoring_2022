@@ -29,10 +29,10 @@ vegetation2013 <- vegetationstack$Leaf.Area.Index.1km.3
 vegetation2020 <- vegetationstack$Leaf.Area.Index.1km.4
 
 # here we plot the files with ggplot2
-P1999 <- ggplot() + geom_raster(vegetation1999, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.1)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 1999")
-P2006 <- ggplot() + geom_raster(vegetation2006, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.2)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 2006")
-P2013 <- ggplot() + geom_raster(vegetation2013, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.3)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 2013")
-P2020 <- ggplot() + geom_raster(vegetation2020, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.4)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 2020")
+P1999 <- ggplot() + geom_raster(vegetation1999, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.1)) + scale_fill_viridis(option="viridis") + ggtitle ("LAI 1999")
+P2006 <- ggplot() + geom_raster(vegetation2006, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.2)) + scale_fill_viridis(option="viridis") + ggtitle ("LAI 2006")
+P2013 <- ggplot() + geom_raster(vegetation2013, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.3)) + scale_fill_viridis(option="viridis") + ggtitle ("LAI 2013")
+P2020 <- ggplot() + geom_raster(vegetation2020, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.4)) + scale_fill_viridis(option="viridis") + ggtitle ("LAI 2020")
 
 # use patchwork for comparing the files
 # use / to plot vertical sequence
@@ -49,12 +49,48 @@ vegetation2006_MAS<-crop(vegetation2006,ext)
 vegetation2013_MAS<-crop(vegetation2013,ext)
 vegetation2020_MAS<-crop(vegetation2020,ext)
 
-P1999_MAS <- ggplot() + geom_raster(vegetation1999_MAS, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.1)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 1999")
-P2006_MAS <- ggplot() + geom_raster(vegetation2006_MAS, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.2)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 2006")
-P2013_MAS <- ggplot() + geom_raster(vegetation2013_MAS, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.3)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 2013")
-P2020_MAS <- ggplot() + geom_raster(vegetation2020_MAS, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.4)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 2020")
+P1999_MAS <- ggplot() + geom_raster(vegetation1999_MAS, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.1)) + scale_fill_viridis(option="viridis") + ggtitle ("LAI 1999")
+P2006_MAS <- ggplot() + geom_raster(vegetation2006_MAS, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.2)) + scale_fill_viridis(option="viridis") + ggtitle ("LAI 2006")
+P2013_MAS <- ggplot() + geom_raster(vegetation2013_MAS, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.3)) + scale_fill_viridis(option="viridis") + ggtitle ("LAI 2013")
+P2020_MAS <- ggplot() + geom_raster(vegetation2020_MAS, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.4)) + scale_fill_viridis(option="viridis") + ggtitle ("LAI 2020")
 
 P1999_MAS + P2006_MAS + P2013_MAS + P2020_MAS
+
+# Computing the difference between the first and the last year (1999 and 2020)
+dif<-vegetation2020_MAS - vegetation1999_MAS
+dif
+
+# Create a palette from the viridis package
+mako(3)
+mako<-colorRampPalette(c("#0B0405FF", "#357BA2FF", "#DEF5E5FF"))(100)
+
+viridis(3)
+viridis<-colorRampPalette(c("#440154FF", "#21908CFF", "#FDE725FF"))(100) 
+
+plot(dif, col=mako)
+
+# we can also transform it into a ggplot
+difference <- ggplot() + geom_raster(dif, mapping = aes(x=x, y=y, fill=layer)) + scale_fill_viridis(option="mako") + ggtitle ("1999-2020 LAI difference")
+difference
+
+# Focus on Peninsular Malaysia LAI difference
+# Crop the area first
+P_MAS<-c(99.6419, 105, 0.8527, 7.3529)
+P_MAS_1999<-crop(vegetation1999,P_MAS)
+P_MAS_2020<-crop(vegetation2020,P_MAS)
+
+# Compute the difference between the layers
+P_MAS_dif<-P_MAS_2020-P_MAS_1999
+
+# Plot!
+plot(P_MAS_dif, col=viridis)
+
+# Make a multiframe of the LAI in 1999, the difference, and the LAI 2020
+# Let's use a different palette for the difference image
+par(mfrow=c(1,3))
+plot(P_MAS_1999, col=viridis)
+plot(P_MAS_dif, col=mako)
+plot(P_MAS_2020, col=viridis)
 
 # Let's zoom on the Sarawak state, a region of Malaysia on the Borneo Island where most of the deforestation is happening
 Sarawak<-c(109.6060, 115.5806, 0.8527, 5.2135)
@@ -62,26 +98,6 @@ Sarawak1999<-crop(vegetation1999,Sarawak)
 Sarawak2006<-crop(vegetation2006,Sarawak)
 Sarawak2013<-crop(vegetation2013,Sarawak)
 Sarawak2020<-crop(vegetation2020,Sarawak)
-
-P1999_SAR <- ggplot() + geom_raster(Sarawak1999, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.1)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 1999")
-P2006_SAR <- ggplot() + geom_raster(Sarawak2006, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.2)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 2006")
-P2013_SAR <- ggplot() + geom_raster(Sarawak2013, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.3)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 2013")
-P2020_SAR <- ggplot() + geom_raster(Sarawak2020, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.4)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 2020")
-
-P1999_SAR + P2006_SAR + P2013_SAR + P2020_SAR
-
-# here we crop approximately the Amazon forest area
-Amazon <- c(-82, -40, -20, 12)
-vegetation1999_AMZ<-crop(vegetation1999,Amazon)
-vegetation2006_AMZ<-crop(vegetation2006,Amazon)
-vegetation2013_AMZ<-crop(vegetation2013,Amazon)
-vegetation2020_AMZ<-crop(vegetation2020,Amazon)
-P1999_AMZ <- ggplot() + geom_raster(vegetation1999_AMZ, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.1)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 1999")
-P2006_AMZ <- ggplot() + geom_raster(vegetation2006_AMZ, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.2)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 2006")
-P2013_AMZ <- ggplot() + geom_raster(vegetation2013_AMZ, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.3)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 2013")
-P2020_AMZ <- ggplot() + geom_raster(vegetation2020_AMZ, mapping = aes(x=x, y=y, fill=Leaf.Area.Index.1km.4)) + scale_fill_viridis(option="mako") + ggtitle ("LAI 2020")
-
-P1999_AMZ + P2006_AMZ + P2013_AMZ + P2020_AMZ
 
 # scatterplot matrix for global LAI 
 pairs(vegetationstack) # density plot, scatterplot, and Pearson coefficient
