@@ -112,39 +112,36 @@ P_MAS_dif<-P_MAS_2020-P_MAS_1999
 plot(P_MAS_dif, col=mako)
 
 # Use diverging colors to plot the positive and negative change in LAI
-green_orange<-diverging_hcl(5, "Green Orange")
-green_orange # recall the variable to see the color palette
-# "#11C638" "#95D69A" "#E2E2E2" "#F0BC95" "#EF9708"
-# To see positive change in green and negative change in orange, let's switch the green and orange
-orange_green<-colorRampPalette(c("#EF9708", "#F0BC95", "#E2E2E2", "#95D69A", "#11C638"))(100)
+red_green<-diverging_hcl(5, "Red-Green")
+red_green # recall the variable to see the color palette
+# "#841859" "#F398C4" "#F6F6F6" "#7CC57D" "#005600"
 
 # This palette does not center in 0, but we want the grey color to be exactly in 0
-# I also want to change the light gray #E2E2E2 to a darker gray #141414
 
 # Palette for the top half of the image, with positive values
-green <- colorRampPalette(colors = c( "#141414", "#11C638", "#95D69A"))(50.33283)
+green <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(50.33283)
 
 # Palette for the bottom half of the image, with negative values
-orange <- colorRampPalette(colors = c( "#F0BC95", "#EF9708","#141414"))(61.66605)
+red <- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(61.66605)
 
 # Combine the two color palettes
-orange_green <- c(orange, green)
+red_green <- c(red, green)
 
 # Plot!
-plot(P_MAS_dif, col=orange_green) # now it's centered!
+plot(P_MAS_dif, col=red_green) # now it's centered!
 
 # Make a multiframe of the LAI in 1999, the difference, and the LAI 2020
 # Let's use a different palette for the difference image
 par(mfrow=c(1,3))
 plot(P_MAS_1999, col=viridis, main="LAI in 1999")
-plot(P_MAS_dif, col=orange_green, main="1999-2020 difference")
+plot(P_MAS_dif, col=red_green, main="1999-2020 difference")
 plot(P_MAS_2020, col=viridis, main="LAI in 2020")
 
 # Export the picture as PNG
 png(file="Peninsular Malaysia 1999-2020.png", units="cm", width=30, height=10, res=600)
 par(mfrow=c(1,3))
 plot(P_MAS_1999, col=viridis, main="LAI in 1999")
-plot(P_MAS_dif, col=orange_green, main="1999-2020 difference")
+plot(P_MAS_dif, col=red_green, main="1999-2020 difference")
 plot(P_MAS_2020, col=viridis, main="LAI in 2020")
 dev.off()
 
@@ -158,18 +155,18 @@ Sarawak2020<-crop(vegetation2020,Sarawak)
 dif_Sar<-Sarawak2020-Sarawak1999
 
 # Palette for the top half of the image, with positive values
-green2 <- colorRampPalette(colors = c( "#141414", "#11C638", "#95D69A"))(52.33281)
+green2 <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(52.33281)
 
 # Palette for the bottom half of the image, with negative values
-orange2 <- colorRampPalette(colors = c( "#F0BC95", "#EF9708","#141414"))(58.33275)
+red2 <- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(58.33275)
 
 # Combine the two color palettes
-orange_green2 <- c(orange2, green2)
+red_green2 <- c(red2, green2)
 
 png(file="Sarawak 1999-2020.png", units="cm", width=30, height=10, res=600)
 par(mfrow=c(1,3))
 plot(Sarawak1999, col=viridis, main="LAI in 1999")
-plot(dif_Sar, col=orange_green2, main="1999-2020 difference")
+plot(dif_Sar, col=red_green2, main="1999-2020 difference")
 plot(Sarawak2020, col=viridis, main="LAI in 2020")
 dev.off()
 
@@ -177,27 +174,27 @@ dev.off()
 # we have to adjust the palette for each plot so it's centered in 0
 # we do this by taking the max and min values from each computed difference and multiply it by 10
 dif_1999_2006<-P_MAS_2006-P_MAS_1999
-gr_a <- colorRampPalette(colors = c( "#141414", "#11C638", "#95D69A"))(53.99946)
-or_a<- colorRampPalette(colors = c( "#F0BC95", "#EF9708","#141414"))(55.33278)
-or_gr_a <- c(or_a, gr_a)
-plot(dif_1999_2006, col=or_gr_a, main="1999 - 2006")
+gr_a <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(53.99946)
+rd_a<- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(55.33278)
+rd_gr_a <- c(rd_a, gr_a)
+plot(dif_1999_2006, col=rd_gr_a, main="1999 - 2006")
 
 dif_2006_2013<-P_MAS_2013-P_MAS_2006
-gr_b <- colorRampPalette(colors = c( "#141414", "#11C638", "#95D69A"))(58.33275)
-or_b<- colorRampPalette(colors = c( "#F0BC95", "#EF9708","#141414"))(54.33279)
-or_gr_b <- c(or_b, gr_b)
-plot(dif_2006_2013, col=or_gr_b, main="2006 - 2013")
+gr_b <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(58.33275)
+rd_b<- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(54.33279)
+rd_gr_b <- c(rd_b, gr_b)
+plot(dif_2006_2013, col=rd_gr_b, main="2006 - 2013")
 
 dif_2013_2020<-P_MAS_2020-P_MAS_2013
-gr_c <- colorRampPalette(colors = c( "#141414", "#11C638", "#95D69A"))(45.99954)
-or_c<- colorRampPalette(colors = c( "#F0BC95", "#EF9708","#141414"))(61.66605)
-or_gr_c <- c(or_c, gr_c)
-plot(dif_2013_2020, col=or_gr_c, main="2013 - 2020")
+gr_c <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(45.99954)
+rd_c<- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(61.66605)
+rd_gr_c <- c(rd_c, gr_c)
+plot(dif_2013_2020, col=rd_gr_c, main="2013 - 2020")
 
 # Safe files as png and a multiframe
 png(file="7 years timeframe difference.png", units="cm", width=30, height=10, res=600)
 par(mfrow=c(1,3))
-plot(dif_1999_2006, col=or_gr_a, main="1999 - 2006")
-plot(dif_2006_2013, col=or_gr_b, main="2006 - 2013")
-plot(dif_2013_2020, col=or_gr_c, main="2013 - 2020")
+plot(dif_1999_2006, col=rd_gr_a, main="1999 - 2006")
+plot(dif_2006_2013, col=rd_gr_b, main="2006 - 2013")
+plot(dif_2013_2020, col=rd_gr_c, main="2013 - 2020")
 dev.off()
