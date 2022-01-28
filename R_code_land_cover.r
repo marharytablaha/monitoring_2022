@@ -1,8 +1,8 @@
 library(raster)
 library(patchwork)
-setwd("D:/Users/marha/Documents/_UNIBO_/ME")
-LC2015<-brick("E100N20_PROBAV_LC100_global_v3.0.1_2015-base_Tree-CoverFraction-layer_EPSG-4326.tif")
-LC2019<-brick("E100N20_PROBAV_LC100_global_v3.0.1_2019-nrt_Tree-CoverFraction-layer_EPSG-4326.tif")
+setwd("C:/lab/Land Cover Malaysia")
+LC2015<-brick("LC2015_TreeCoverFraction.tif")
+LC2019<-brick("LC2019_TreeCoverFraction.tif")
 
 # recall the variables to read the descriptors
 
