@@ -11,13 +11,13 @@ library(RStoolbox) # tools for remote sensing data processing; builds on raster
 library(ggplot2) # for plots
 library(viridis) # palette
 library(colorspace) # palette for diverging colors
-library(patchwork) # for comparing ggplots
+library(patchwork) # for comparing separate ggplots
 
 # Set the working directory
 setwd("C:/lab/LAI/")
 # one way of importing is one by one
-vegetation1999 <- raster("c_gls_LAI_199907100000_GLOBE_VGT_V2.0.2.nc")
-vegetation1999
+lai1999 <- raster("c_gls_LAI_199907100000_GLOBE_VGT_V2.0.2.nc")
+lai1999
 
 # we can also import multiple files at once that have the same pattern in the name
 # this is much faster when we have many files to import
@@ -131,9 +131,9 @@ plot(P_MYS_dif, col=red_green) # now the midpoint of the palette is in 0!
 
 # Make a multiframe of the LAI in 1999, the difference, and the LAI 2020
 par(mfrow=c(1,3))
-plot(P_MAS_1999, col=viridis, main="LAI in 1999")
-plot(P_MAS_dif, col=red_green, main="1999-2020 difference")
-plot(P_MAS_2020, col=viridis, main="LAI in 2020")
+plot(P_MYS_1999, col=viridis, main="LAI in 1999")
+plot(P_MYS_dif, col=red_green, main="1999-2020 difference")
+plot(P_MYS_2020, col=viridis, main="LAI in 2020")
 
 # Export the picture as PNG
 png(file="Peninsular Malaysia 1999-2020.png", units="cm", width=30, height=10, res=600)
@@ -170,7 +170,7 @@ plot(Sarawak1999, col=viridis, main="LAI in 1999")
 plot(dif_Sar, col=red_green2, main="1999-2020 difference")
 plot(Sarawak2020, col=viridis, main="LAI in 2020")
 
-# Plot the difference between each 7 years
+# Plot the difference between each 7 years for Peninsular Malaysia
 # We have to adjust the palette for each plot so it's centered in 0
 # Again, one way to do this is by taking the max and min values from each computed difference and multiply it by 10
 lai_99_06 <-P_MYS_2006-P_MYS_1999 # difference between LAI in 2006 and LAI in 1999
@@ -246,5 +246,265 @@ P_MYS_dif_gg <- ggplot() + geom_raster(P_MYS_dif, mapping = aes(x=as.numeric(x),
 # We can now use patchwork to plot both the map and the histogram together
 P_MYS_dif_gg + land_change_plot
 
+# Let's sum all the LAI values of Peninsular Malaysia and divide them for the respective area to dind out if there was a significant change in LAI
 
+# Sum the values with NAs removed
+sum_pmys99<-sum(P_MYS_1999[P_MYS_1999, na.rm=T])
+sum_pmys06<-sum(P_MYS_2006[P_MYS_2006, na.rm=T])
+sum_pmys13<-sum(P_MYS_2013[P_MYS_2013, na.rm=T])
+sum_pmys20<-sum(P_MYS_2020[P_MYS_2020, na.rm=T])
 
+# Calculate the area with NAs removed
+area99<-length(P_MYS_1999[P_MYS_1999, na.rm=T])
+area06<-length(P_MYS_2006[P_MYS_2006, na.rm=T])
+area13<-length(P_MYS_2013[P_MYS_2013, na.rm=T])
+area20<-length(P_MYS_2020[P_MYS_2020, na.rm=T])
+
+# Divide the sum by the area
+sum99<-sum_pmys99/area99
+sum06<-sum_pmys06/area06
+sum13<-sum_pmys13/area13
+sum20<-sum_pmys20/area20
+
+# Create a data frame
+year<-c("1999", "2006", "2013", "2020")
+sum<-c(sum99, sum06, sum13, sum20)
+proportion<-data.frame(sum, lai.sum)
+
+# Plot with ggplot2
+total_lai<- ggplot(proportion, aes(x=year, y=sum, fill=year)) + scale_x_discrete(name = "Year") + scale_y_discrete(name = "Total LAI") + geom_bar(stat="identity", width = 0.4, color="#181818") + scale_fill_manual("Year", values = c(viridis(4))) + theme_minimal() + ggtitle("Total LAI from 1999 to 2020")
+
+######## I've dowloaded FAPAR and FCover data to compare it to LAI data ########
+
+# to import it I've use the same method as for LAI, so:
+rlist <- list.files(pattern="c_gls_FAPAR")
+rlist
+list_rast <- lapply(rlist, raster) # use lapply function to make a raster list from the list of files
+list_rast
+parstack <- stack(list_rast) # we create a raster stack
+parstack
+
+# Change names of the parstack
+names(parstack)<-c("FAPAR.1km.1","FAPAR.1km.2","FAPAR.1km.3","FAPAR.1km.4")
+
+parstack # recall the stack to see if everything is correct
+
+# and then we separate the files, assigning to each element of the stack a name
+par1999 <- parstack$FAPAR.1km.1
+par2006 <- parstack$FAPAR.1km.2
+par2013 <- parstack$FAPAR.1km.3
+par2020 <- parstack$FAPAR.1km.4
+
+# Focus on Peninsular Malaysia FAPAR
+# Crop the area
+pmys<-c(99.6419, 105, 0.8527, 7.3529)
+pmys1999<-crop(par1999, pmys)
+pmys2006<-crop(par2006, pmys)
+pmys2013<-crop(par2013, pmys)
+pmys2020<-crop(par2020, pmys)
+
+# Computing the difference between the first and the last year (1999 and 2020)
+fapar_99_20<-par2020_MYS - par1999_MYS
+fapar_99_20 # values:    -0.94, 0.624 (min, max)
+
+# Palette recalibration to center it in 0
+# Palette for the top half of the image, with positive values
+fapar_gr <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(62.4)
+
+# Palette for the bottom half of the image, with negative values
+fapar_rd <- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(94)
+
+fapar_rd_gr <- c(fapar_rd, fapar_gr)
+
+plot(fapar_99_20, col=fapar_rd_gr, colNA="light blue")
+
+# Plot the difference between each 7 years
+# We have to adjust the palette for each plot so it's centered in 0, where the corresponding color will be light gray
+# We do this by taking the max and min values from each computed difference and multiply it by 10
+fapar_99_06<-pmys2006-pmys1999
+fapar_06_13<-pmys2013-pmys2006
+fapar_13_20<-pmys2020-pmys2013
+fapar_99_06 # values     : -0.9, 0.792  (min, max)
+fapar_06_13 # values     : -0.94, 0.808  (min, max)
+fapar_13_20 # values     : -0.92, 0.572  (min, max)
+
+fapar_gr_a <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(79.2)
+fapar_rd_a<- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(90)
+fapar_rd_gr_a <- c(fapar_rd_a, fapar_gr_a)
+plot(fapar_99_06, col=fapar_rd_gr_a, main="1999 - 2006")
+
+fapar_gr_b <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(80.8)
+fapar_rd_b<- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(94)
+fapar_rd_gr_b <- c(fapar_rd_b, fapar_gr_b)
+plot(fapar_06_13, col=fapar_rd_gr_b, main="2006 - 2013")
+
+fapar_gr_c <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(57.2)
+fapar_rd_c<- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(92)
+fapar_rd_gr_c <- c(fapar_rd_c, fapar_gr_c)
+plot(fapar_13_20, col=fapar_rd_gr_c, main="2013 - 2020")
+
+# Now we can plot the multiframe for FAPAR difference too!
+par(mfrow=c(2,2))
+plot(fapar_99_06, col=fapar_rd_gr_a, colNA="light blue", main="FAPAR 1999 - 2006")
+plot(fapar_06_13, col=fapar_rd_gr_b, colNA="light blue", main="FAPAR 2006 - 2013")
+plot(fapar_13_20, col=fapar_rd_gr_c, colNA="light blue", main="FAPAR 2013 - 2020")
+plot(fapar_99_20, col=fapar_rd_gr, colNA="light blue", main="FAPAR 1999 - 2020")
+
+# Repeat for FCover
+
+setwd("C:/lab/FCOVER/") # Set working directory
+
+# we can  import multiple files at once that have the same pattern in the name
+rlist <- list.files(pattern="c_gls_FCOVER")
+rlist
+list_rast <- lapply(rlist, raster) # use lapply function to make a raster list from the list of files
+list_rast
+fcoverstack <- stack(list_rast) # we create a stack
+fcoverstack
+
+# Change names of the fcoverstack
+names(fcoverstack)<-c("FCOVER.1km.1","FCOVER.1km.2","FCOVER.1km.3","FCOVER.1km.4")
+
+fcoverstack # recall the stack to see if everything is correct
+
+# and then we separate the files, assigning to each element of the stack a name
+fcover1999 <- fcoverstack$FCOVER.1km.1
+fcover2006 <- fcoverstack$FCOVER.1km.2
+fcover2013 <- fcoverstack$FCOVER.1km.3
+fcover2020 <- fcoverstack$FCOVER.1km.4
+
+# Export a PNG file of the global Fcover in 2020
+png(file="FCOVER global 2020.png", units="cm", width=25, height=14, res=600)
+par(bg=NA)
+plot(fcover2020, col=viridis, colNA=NA, bg="transparent")
+dev.off()
+
+# Focus on Peninsular Malaysia FAPAR difference
+# We already have the values for cropping
+pmys<-c(99.6419, 105, 0.8527, 7.3529)
+fcover_pmys1999<-crop(fcover1999, pmys)
+fcover_pmys2006<-crop(fcover2006, pmys)
+fcover_pmys2013<-crop(fcover2013, pmys)
+fcover_pmys2020<-crop(fcover2020, pmys)
+
+# Plot the difference between each 7 years
+# Adjust the palette for each plot so it's centered in 0, where the corresponding color will be light gray
+# We do this by taking the max and min values from each computed difference and multiply it by 10
+fcover_99_06<-fcover_pmys2006-fcover_pmys1999
+fcover_06_13<-fcover_pmys2013-fcover_pmys2006
+fcover_13_20<-fcover_pmys2020-fcover_pmys2013
+fcover_99_20<-fcover_pmys2020-fcover_pmys1999
+
+fcover_99_06 # values     : -0.948, 0.844  (min, max)
+fcover_06_13 # values     : -0.944, 0.952  (min, max)
+fcover_13_20 # values     : -0.96, 0.704  (min, max)
+fcover_99_20 # values     : -1, 0.628  (min, max)
+
+fcover_gr_a <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(84.8)
+fcover_rd_a<- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(94.8)
+fcover_rd_gr_a <- c(fcover_rd_a, fcover_gr_a)
+plot(fcover_99_06, col=fcover_rd_gr_a, colNA="light blue", main="1999 - 2006")
+
+fcover_gr_b <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(95.2)
+fcover_rd_b<- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(94.4)
+fcover_rd_gr_b <- c(fcover_rd_b, fcover_gr_b)
+plot(fcover_06_13, col=fcover_rd_gr_b, colNA="light blue", main="2006 - 2013")
+
+fcover_gr_c <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(70.4)
+fcover_rd_c<- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(96)
+fcover_rd_gr_c <- c(fcover_rd_c, fcover_gr_c)
+plot(fcover_13_20, col=fcover_rd_gr_c, colNA="light blue", main="2013 - 2020")
+
+fcover_gr <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(62.8)
+fcover_rd<- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(100)
+fcover_rd_gr <- c(fcover_rd, fcover_gr)
+plot(fcover_99_20, col=fcover_rd_gr, colNA="light blue", main="1999 - 2020")
+
+# We can now plot all the difference values obtained from LAI, FAPAR, and FCover together (9 plots)
+par(mfrow=c(3,3)) # make a multiframe 3x3
+par(bg=NA, col.axis="#fde725", col.lab="#fde725", bg="transparent", col.main="#fde725", col.sub="#fde725", fg="#fde725") # change default par() options
+
+# Plot!
+plot(lai_99_06, col=lai_rd_gr_a, colNA="light blue", main="LAI 1999 - 2006")
+plot(lai_06_13, col=lai_rd_gr_b, colNA="light blue", main="LAI 2006 - 2013")
+plot(lai_13_20, col=lai_rd_gr_c, colNA="light blue", main="LAI 2013 - 2020")
+plot(fapar_99_06, col=fapar_rd_gr_a, colNA="light blue", main="FAPAR 1999 - 2006")
+plot(fapar_06_13, col=fapar_rd_gr_b, colNA="light blue", main="FAPAR 2006 - 2013")
+plot(fapar_13_20, col=fapar_rd_gr_c, colNA="light blue", main="FAPAR 2013 - 2020")
+plot(fcover_99_06, col=fcover_rd_gr_a, colNA="light blue", main="FCOVER 1999 - 2006")
+plot(fcover_06_13, col=fcover_rd_gr_b, colNA="light blue", main="FCOVER 2006 - 2013")
+plot(fcover_13_20, col=fcover_rd_gr_c, colNA="light blue", main="FCOVER 2013 - 2020")
+
+# We can also sum the difference between 2020 and 1999 from each Copernicus service analysed
+
+# Let's add the variables from the same timeframe, so we can make 3 plots in separated timeframes first
+sum_99_06<-lai_99_06+fapar_99_06+fcover_99_06
+sum_06_13<-lai_06_13+fapar_06_13+fcover_06_13
+sum_13_20<-lai_13_20+fapar_13_20+fcover_13_20
+
+sum_99_06 # values     : -6.963946, 6.662615  (min, max)
+sum_06_13 # values     : -6.719948, 6.577275  (min, max)
+sum_13_20 # values     : -7.998605, 5.867954  (min, max)
+
+# Adjusting the palette
+sum_gr_a <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(66.62615 )
+sum_rd_a<- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(69.63946)
+sum_rd_gr_a <- c(sum_rd_a, sum_gr_a)
+
+sum_gr_b <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(65.77275)
+sum_rd_b<- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(67.19948)
+sum_rd_gr_b <- c(sum_rd_b, sum_gr_b)
+
+sum_gr_c <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(58.67954)
+sum_rd_c<- colorRampPalette(colors = c("#841859", "#841859", "#F398C4", "#F398C4", "#F6F6F6"))(79.98605)
+sum_rd_gr_c <- c(sum_rd_c, sum_gr_c)
+
+# Plot a multiframe 3x1
+par(mfrow=c(1,3))
+par(bg=NA, col.axis="#fde725", col.lab="#fde725", bg="transparent", col.main="#fde725", col.sub="#fde725", fg="#fde725")
+plot(sum_99_06, col=sum_rd_gr_a, colNA="light blue", main="VGT 1999 - 2006")
+plot(sum_06_13, col=sum_rd_gr_b, colNA="light blue", main="VGT 2006 - 2013")
+plot(sum_13_20, col=sum_rd_gr_c, colNA="light blue", main="VGT 2013 - 2020")
+
+# Sum all the 3 timeframes into 1
+total_sum<-sum_99_06+sum_06_13+sum_13_20
+total_sum # values     : -8.006606, 6.285283  (min, max)
+
+total_gr <- colorRampPalette(colors = c("#F6F6F6", "#7CC57D", "#005600"))(62.85283)
+total_rd<- colorRampPalette(colors = c("#841859", "#F398C4", "#F6F6F6"))(80.06606)
+total_rd_gr <- c(total_rd, total_gr)
+
+# Export the obtained plot as a PNG
+png(file="Sum of LAI, FAPAR and FCOVER.png", units="cm", width=20, height=20, res=600)
+par(bg=NA, col.axis="#fde725", col.lab="#fde725", bg="transparent", col.main="#fde725", col.sub="#fde725", fg="#fde725")
+plot(total_sum, col=total_rd_gr, colNA="light blue")
+dev.off()
+
+# I want to try using a "dark mode" palette; it highlights very well the changes on the map
+black_green <- colorRampPalette(colors = c("#181818", "#11C638", "#95D69A"))(62.85283)
+
+# Palette for the bottom half of the image, with negative values
+orange_black <- colorRampPalette(colors = c("#F0BC95", "#EF9708","#181818"))(80.06606)
+
+# Combine the two color palettes
+orange_green <- c(orange_black, black_green)
+
+# Compare the two plots
+par(mfrow=c(1,2))
+plot(total_sum, col=total_rd_gr, colNA="light blue")
+plot(total_sum, col=orange_green, colNA="light blue")
+
+# Lastly, I used the pairs function to compare the 9 plots of the difference values obtained from LAI, FAPAR, and FCover together
+# Make a stack of all the variables
+all_indicators<-stack(lai_99_06, lai_06_13, lai_13_20, fapar_99_06, fapar_06_13, fapar_13_20, fcover_99_06, fcover_06_13, fcover_13_20)
+
+# Change the names; they will appear in the final plot
+names(all_indicators) <- c("LAI.99.06", "LAI.06.13", "LAI.13.20", "FAPAR.99.06", "FAPAR.06.13", "FAPAR.13.20", "FCOVER.99.06", "FCOVER.06.13", "FCOVER.13.20")
+
+pairs(all_indicators)
+
+# Save the file with a PNG extention
+png(file="PAIRS with all the differences.png", units="cm", width=30, height=30, res=600)
+par(bg=NA, col.axis="#fde725", col.lab="#fde725", bg="transparent", col.main="#fde725", col.sub="#fde725", fg="#fde725")
+pairs(all_indicators)
+dev.off()
