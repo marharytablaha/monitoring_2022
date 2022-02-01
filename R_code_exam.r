@@ -81,19 +81,7 @@ png(file="LAI Malaysia.png", units="cm", width=15, height=23, res=600)
 P1999_MYS / P2006_MYS / P2013_MYS / P2020_MYS
 dev.off()
 
-# Scatterplot matrix for Malaysia
-MYS_stack<-stack(lai1999_MYS,lai2006_MYS,lai2013_MYS,lai2020_MYS) # create a stack from the 4 variables first
-# Recall the variable
-MYS_stack
-names(MYS_stack) <- c("LAI.1999","LAI.2006","LAI.2013","LAI.2020")
 
-# use the pairs function
-pairs(MYS_stack) # density plot, scatterplot, and Pearson coefficient
-
-# Save the scatterplot multiframe in a PNG file
-png(file="LAI scatterplot.png", units="cm", width=20, height=20, res=600)
-pairs(MYS_stack) # density plot, scatterplot, and Pearson coefficient
-dev.off()
 
 # Focus on Peninsular Malaysia LAI difference
 # Crop the area first
@@ -102,6 +90,28 @@ P_MYS_1999 <- crop(lai1999,P_MYS)
 P_MYS_2006 <- crop(lai2006,P_MYS)
 P_MYS_2013 <- crop(lai2013,P_MYS)
 P_MYS_2020 <- crop(lai2020,P_MYS)
+
+# Making a multiframe of 4 histograms
+par(mfrow=c(2,2))
+hist(P_MYS_1999, main="LAI in 1999")
+hist(P_MYS_2006, main="LAI in 2006")
+hist(P_MYS_2013, main="LAI in 2013")
+hist(P_MYS_2020, main="LAI in 2020")
+
+# We can also do this with the pairs function
+# Create a stack from the 4 variables first
+P_MYS_stack<-stack(P_MYS_1999,P_MYS_2006,P_MYS_2013,P_MYS_2020)
+# Recall the variable
+P_MYS_stack
+names(P_MYS_stack)<-c("LAI.1999","LAI.2006","LAI.2013","LAI.2020")
+
+# Use the pairs function
+pairs(P_MYS_stack) # Density plot, scatterplot, and Pearson coefficient
+
+# Save the scatterplot multiframe in a PNG file
+png(file="LAI scatterplot.png", units="cm", width=20, height=20, res=600)
+pairs(P_MYS_stack) # Density plot, scatterplot, and Pearson coefficient
+dev.off()
 
 # Compute the difference between the layers
 P_MYS_dif <- P_MYS_2020-P_MYS_1999
